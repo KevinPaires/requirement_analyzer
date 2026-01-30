@@ -190,37 +190,80 @@ async function handleSubmit() {
     isGenerating = true;
 
     try {
-        // Call API
-        const response = await fetch(`${API_BASE_URL}/generate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                requirement: requirement,
-                session_id: currentSessionId
-            })
-        });
+        // Check if running in demo mode (no backend)
+        const isDemoMode = API_BASE_URL.includes('your-backend-url');
 
-        if (!response.ok) {
-            throw new Error('Failed to generate documentation');
+        let data;
+
+        if (isDemoMode) {
+            // Demo mode - generate mock data
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+
+            const featureName = requirement.split('\n')[0].substring(0, 50);
+            data = {
+                summary: `Successfully generated comprehensive QA documentation for "${featureName}"`,
+                total_test_cases: 85,
+                exploratory_charters: 6,
+                coverage: '100%',
+                test_plan: {
+                    url: 'https://docs.google.com/document/d/demo',
+                    title: `${featureName} - Test Plan`
+                },
+                test_cases: {
+                    url: 'https://docs.google.com/spreadsheets/d/demo',
+                    title: `${featureName} - Test Cases`
+                },
+                exploratory_testing: {
+                    url: 'https://docs.google.com/document/d/demo',
+                    title: `${featureName} - Exploratory Testing`
+                }
+            };
+
+            // Remove loading message
+            removeLoadingMessage(loadingId);
+
+            // Add demo mode notice
+            addMessage('assistant', '⚠️ Demo Mode: This is a preview. Deploy the backend API to generate real Google Docs.\n\nTo deploy the backend, see DEPLOYMENT_GUIDE.md in the repository.');
+
+            // Add result message
+            addResultMessage(data);
+
+            // Save to history
+            saveToHistory(requirement, data);
+
+        } else {
+            // Production mode - call real API
+            const response = await fetch(`${API_BASE_URL}/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    requirement: requirement,
+                    session_id: currentSessionId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate documentation');
+            }
+
+            data = await response.json();
+
+            // Remove loading message
+            removeLoadingMessage(loadingId);
+
+            // Add result message
+            addResultMessage(data);
+
+            // Save to history
+            saveToHistory(requirement, data);
         }
-
-        const data = await response.json();
-
-        // Remove loading message
-        removeLoadingMessage(loadingId);
-
-        // Add result message
-        addResultMessage(data);
-
-        // Save to history
-        saveToHistory(requirement, data);
 
     } catch (error) {
         console.error('Error:', error);
         removeLoadingMessage(loadingId);
-        addMessage('assistant', 'Sorry, there was an error generating the documentation. Please try again.');
+        addMessage('assistant', 'Sorry, there was an error generating the documentation. Please try again.\n\nIf the backend is not deployed yet, the app will run in demo mode.');
     } finally {
         isGenerating = false;
     }
