@@ -539,7 +539,15 @@ def generate_documentation():
 
         # Try to create real Google Docs
         try:
-            from api.google_docs_simple import create_google_doc, create_google_sheet
+            # Import at the top level for Railway
+            import sys
+            import os
+            api_dir = os.path.dirname(os.path.abspath(__file__))
+            if api_dir not in sys.path:
+                sys.path.insert(0, api_dir)
+
+            from google_docs_simple import create_google_doc, create_google_sheet
+            print("Successfully imported google_docs_simple")
 
             # Create Test Plan Doc
             test_plan_doc = create_google_doc(f'{feature_name} - Test Plan', test_plan_content)
