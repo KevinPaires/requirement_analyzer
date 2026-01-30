@@ -1,0 +1,6 @@
+{
+  "claude.autoApprove": ["read", "write", "edit"],
+  "claude.autoApproveDirectories": [
+    "/Users/kevinpaires/requirment_analyzer"
+  ]
+}
