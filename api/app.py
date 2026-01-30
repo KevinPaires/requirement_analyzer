@@ -14,7 +14,6 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from execution.create_google_doc import GoogleDocsCreator
-from execution.create_google_sheet import create_spreadsheet, populate_sheet_from_csv, format_sheet
 from execution.replace_doc_content import replace_document_content
 
 app = Flask(__name__)
@@ -557,17 +556,11 @@ def generate_documentation():
                     'title': test_plan_doc['title']
                 }
 
-                # Create Test Cases Sheet
-                from execution.create_google_sheet import GoogleSheetsCreator
-                sheets_creator = GoogleSheetsCreator(CREDENTIALS_FILE)
-                spreadsheet = sheets_creator.create_spreadsheet(f'{feature_name} - Test Cases')
-                sheets_creator.populate_from_csv(spreadsheet['spreadsheet_id'], test_cases_file)
-                sheets_creator.format_sheet(spreadsheet['spreadsheet_id'])
-
+                # Create Test Cases Sheet (simplified - just return file link for now)
                 result['test_cases'] = {
-                    'id': spreadsheet['spreadsheet_id'],
-                    'url': spreadsheet['spreadsheet_url'],
-                    'title': spreadsheet['title']
+                    'id': 'demo',
+                    'url': f'file://{test_cases_file}',
+                    'title': f'{feature_name} - Test Cases'
                 }
 
                 # Create Exploratory Testing Doc
