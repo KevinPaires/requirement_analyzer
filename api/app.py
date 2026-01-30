@@ -537,22 +537,37 @@ def generate_documentation():
             'exploratory_testing': {}
         }
 
-        # Simplified: Return demo links (Google Docs integration disabled for now)
-        result['test_plan'] = {
-            'id': 'demo',
-            'url': 'https://docs.google.com/document/d/demo',
-            'title': f'{feature_name} - Test Plan'
-        }
-        result['test_cases'] = {
-            'id': 'demo',
-            'url': 'https://docs.google.com/spreadsheets/d/demo',
-            'title': f'{feature_name} - Test Cases'
-        }
-        result['exploratory_testing'] = {
-            'id': 'demo',
-            'url': 'https://docs.google.com/document/d/demo',
-            'title': f'{feature_name} - Exploratory Testing'
-        }
+        # Try to create real Google Docs
+        try:
+            from api.google_docs_simple import create_google_doc, create_google_sheet
+
+            # Create Test Plan Doc
+            test_plan_doc = create_google_doc(f'{feature_name} - Test Plan', test_plan_content)
+            if test_plan_doc:
+                result['test_plan'] = test_plan_doc
+            else:
+                result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
+
+            # Create Test Cases Sheet
+            test_cases_sheet = create_google_sheet(f'{feature_name} - Test Cases', test_cases_csv)
+            if test_cases_sheet:
+                result['test_cases'] = test_cases_sheet
+            else:
+                result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
+
+            # Create Exploratory Testing Doc
+            exploratory_doc = create_google_doc(f'{feature_name} - Exploratory Testing', exploratory_content)
+            if exploratory_doc:
+                result['exploratory_testing'] = exploratory_doc
+            else:
+                result['exploratory_testing'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Exploratory Testing'}
+
+        except Exception as e:
+            print(f'Google Docs integration error: {e}')
+            # Fallback to demo links
+            result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
+            result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
+            result['exploratory_testing'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Exploratory Testing'}
 
         return jsonify(result)
 
