@@ -1,7 +1,7 @@
 // API Configuration
 const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:5000/api'
-    : 'https://your-backend-url.herokuapp.com/api';
+    : 'https://web-production-f4c75.up.railway.app/api';
 
 // DOM Elements
 const requirementInput = document.getElementById('requirementInput');
