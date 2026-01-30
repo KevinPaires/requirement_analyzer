@@ -18,37 +18,52 @@ def get_credentials():
     creds_json = os.environ.get('GOOGLE_CREDENTIALS')
 
     if creds_json:
-        # Parse JSON from environment
-        creds_dict = json.loads(creds_json)
-        credentials = service_account.Credentials.from_service_account_info(
-            creds_dict, scopes=SCOPES
-        )
-        return credentials
+        try:
+            # Parse JSON from environment
+            print(f"Found GOOGLE_CREDENTIALS env var (length: {len(creds_json)})")
+            creds_dict = json.loads(creds_json)
+            print(f"Parsed JSON, project: {creds_dict.get('project_id')}")
+            credentials = service_account.Credentials.from_service_account_info(
+                creds_dict, scopes=SCOPES
+            )
+            print("Successfully created service account credentials")
+            return credentials
+        except Exception as e:
+            print(f"Error parsing GOOGLE_CREDENTIALS: {e}")
+            return None
 
     # Fallback to file (for local development)
     creds_file = 'credentials.json'
     if os.path.exists(creds_file):
+        print(f"Using credentials file: {creds_file}")
         credentials = service_account.Credentials.from_service_account_file(
             creds_file, scopes=SCOPES
         )
         return credentials
 
+    print("No credentials found")
     return None
 
 def create_google_doc(title, content):
     """Create a Google Doc with content"""
     try:
+        print(f"Attempting to create Google Doc: {title}")
         creds = get_credentials()
         if not creds:
+            print("No credentials available")
             return None
 
+        print("Building docs service...")
         docs_service = build('docs', 'v1', credentials=creds)
 
         # Create document
+        print("Creating document...")
         doc = docs_service.documents().create(body={'title': title}).execute()
         doc_id = doc.get('documentId')
+        print(f"Document created with ID: {doc_id}")
 
         # Add content
+        print("Adding content...")
         requests = [{
             'insertText': {
                 'location': {'index': 1},
@@ -61,6 +76,7 @@ def create_google_doc(title, content):
             body={'requests': requests}
         ).execute()
 
+        print(f"Successfully created doc: {doc_id}")
         return {
             'id': doc_id,
             'url': f'https://docs.google.com/document/d/{doc_id}/edit',
@@ -69,6 +85,8 @@ def create_google_doc(title, content):
 
     except Exception as e:
         print(f'Error creating Google Doc: {e}')
+        import traceback
+        traceback.print_exc()
         return None
 
 def create_google_sheet(title, csv_data):
