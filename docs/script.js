@@ -190,14 +190,32 @@ async function handleSubmit() {
     isGenerating = true;
 
     try {
-        // Check if running in demo mode (no backend)
-        const isDemoMode = API_BASE_URL.includes('your-backend-url');
-
         let data;
 
-        if (isDemoMode) {
-            // Demo mode - generate mock data
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+        try {
+            // Try to call the backend API first
+            const response = await fetch(`${API_BASE_URL}/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    requirement: requirement,
+                    session_id: currentSessionId
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Backend not available');
+            }
+
+            data = await response.json();
+
+        } catch (apiError) {
+            // Fallback to demo mode if API fails
+            console.log('API not available, using demo mode:', apiError);
+
+            await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate delay
 
             const featureName = requirement.split('\n')[0].substring(0, 50);
             data = {
@@ -219,46 +237,15 @@ async function handleSubmit() {
                 }
             };
 
-            // Remove loading message
-            removeLoadingMessage(loadingId);
-
             // Add demo mode notice
-            addMessage('assistant', '⚠️ Demo Mode: This is a preview. Deploy the backend API to generate real Google Docs.\n\nTo deploy the backend, see DEPLOYMENT_GUIDE.md in the repository.');
-
-            // Add result message
-            addResultMessage(data);
-
-            // Save to history
-            saveToHistory(requirement, data);
-
-        } else {
-            // Production mode - call real API
-            const response = await fetch(`${API_BASE_URL}/generate`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    requirement: requirement,
-                    session_id: currentSessionId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to generate documentation');
-            }
-
-            data = await response.json();
-
-            // Remove loading message
             removeLoadingMessage(loadingId);
-
-            // Add result message
-            addResultMessage(data);
-
-            // Save to history
-            saveToHistory(requirement, data);
+            addMessage('assistant', '⚠️ Demo Mode: Backend API is not deployed. Showing preview with sample data.\n\nTo generate real Google Docs, deploy the backend (see DEPLOYMENT_GUIDE.md).');
         }
+
+        // Remove loading message and show results
+        removeLoadingMessage(loadingId);
+        addResultMessage(data);
+        saveToHistory(requirement, data);
 
     } catch (error) {
         console.error('Error:', error);

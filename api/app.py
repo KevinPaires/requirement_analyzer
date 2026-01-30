@@ -13,9 +13,6 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from execution.create_google_doc import GoogleDocsCreator
-from execution.replace_doc_content import replace_document_content
-
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
@@ -540,48 +537,22 @@ def generate_documentation():
             'exploratory_testing': {}
         }
 
-        if os.path.exists(CREDENTIALS_FILE):
-            try:
-                # Create Test Plan
-                docs_creator = GoogleDocsCreator(CREDENTIALS_FILE)
-                test_plan_doc = docs_creator.create_document(f'{feature_name} - Test Plan')
-                replace_document_content(
-                    test_plan_doc['document_id'],
-                    test_plan_content,
-                    CREDENTIALS_FILE
-                )
-                result['test_plan'] = {
-                    'id': test_plan_doc['document_id'],
-                    'url': test_plan_doc['document_url'],
-                    'title': test_plan_doc['title']
-                }
-
-                # Create Test Cases Sheet (simplified - just return file link for now)
-                result['test_cases'] = {
-                    'id': 'demo',
-                    'url': f'file://{test_cases_file}',
-                    'title': f'{feature_name} - Test Cases'
-                }
-
-                # Create Exploratory Testing Doc
-                exploratory_doc = docs_creator.create_document(f'{feature_name} - Exploratory Testing')
-                replace_document_content(
-                    exploratory_doc['document_id'],
-                    exploratory_content,
-                    CREDENTIALS_FILE
-                )
-                result['exploratory_testing'] = {
-                    'id': exploratory_doc['document_id'],
-                    'url': exploratory_doc['document_url'],
-                    'title': exploratory_doc['title']
-                }
-
-            except Exception as e:
-                print(f'Error creating Google Docs: {e}')
-                # Return local file paths if Google Docs creation fails
-                result['test_plan'] = {'url': f'file://{test_plan_file}'}
-                result['test_cases'] = {'url': f'file://{test_cases_file}'}
-                result['exploratory_testing'] = {'url': f'file://{exploratory_file}'}
+        # Simplified: Return demo links (Google Docs integration disabled for now)
+        result['test_plan'] = {
+            'id': 'demo',
+            'url': 'https://docs.google.com/document/d/demo',
+            'title': f'{feature_name} - Test Plan'
+        }
+        result['test_cases'] = {
+            'id': 'demo',
+            'url': 'https://docs.google.com/spreadsheets/d/demo',
+            'title': f'{feature_name} - Test Cases'
+        }
+        result['exploratory_testing'] = {
+            'id': 'demo',
+            'url': 'https://docs.google.com/document/d/demo',
+            'title': f'{feature_name} - Exploratory Testing'
+        }
 
         return jsonify(result)
 
