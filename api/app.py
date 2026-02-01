@@ -726,7 +726,7 @@ OUTPUT FORMAT:
 Return ONLY the CSV content, starting with the header row. Do not include any explanations, markdown formatting, or additional text. Just the raw CSV data."""
 
         message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-sonnet-4-5-20250929",
             max_tokens=8000,
             messages=[{"role": "user", "content": prompt}]
         )
