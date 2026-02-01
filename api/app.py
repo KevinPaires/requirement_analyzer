@@ -1162,6 +1162,11 @@ def generate_documentation():
 
     try:
         print("=== Starting documentation generation ===")
+
+        # Ensure tmp directory exists
+        os.makedirs(TMP_DIR, exist_ok=True)
+        print(f"TMP_DIR: {TMP_DIR} exists: {os.path.exists(TMP_DIR)}")
+
         data = request.get_json()
         requirement = data.get('requirement', '')
         session_id = data.get('session_id', 'default')
