@@ -566,7 +566,7 @@ last_google_docs_error = None
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'service': 'QA Documentation Generator'})
+    return jsonify({'status': 'healthy', 'service': 'QA Documentation Generator', 'version': '2.0'})
 
 @app.route('/api/debug/credentials', methods=['GET'])
 def debug_credentials():
