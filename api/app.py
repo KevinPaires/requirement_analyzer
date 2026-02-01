@@ -28,6 +28,9 @@ def generate_test_plan_csv(requirement_text, feature_name):
     """Generate test plan as CSV format"""
     date = datetime.now().strftime('%B %d, %Y')
 
+    # Clean requirement text for CSV (no backslashes in f-string)
+    clean_req = requirement_text[:200].replace(',', ';').replace('\n', ' ')
+
     csv_content = f"""Section,Subsection,Content
 Document Control,Version,v1.0
 Document Control,Date Created,{date}
@@ -35,7 +38,7 @@ Document Control,Last Updated,{date}
 Document Control,Author,Senior QA Engineer
 Document Control,Status,Ready for Review
 Introduction,Feature Name,{feature_name}
-Introduction,Feature Overview,{requirement_text[:200].replace(',', ';').replace('\n', ' ')}
+Introduction,Feature Overview,{clean_req}
 Test Strategy,Functional Testing,"Verify all workflows and features work as specified in requirements"
 Test Strategy,Validation Testing,"Test input validation, error messages, and data integrity"
 Test Strategy,Security Testing,"SQL injection, XSS, CSRF protection, authentication"
