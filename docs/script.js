@@ -357,42 +357,42 @@ function addResultMessage(data) {
                 </div>
 
                 <div class="result-links">
-                    ${testPlan.url ? `
-                    <a href="${testPlan.url}" target="_blank" class="doc-link">
+                    ${testPlan.download_url ? `
+                    <a href="${API_BASE_URL.replace('/api', '')}${testPlan.download_url}" download="${testPlan.filename}" class="doc-link">
                         <div class="doc-link-content">
                             <div class="doc-icon">📄</div>
                             <div class="doc-info">
                                 <h4>Test Plan</h4>
-                                <p>Comprehensive test strategy, scope, and schedule</p>
+                                <p>Comprehensive test strategy, scope, and schedule (.md)</p>
                             </div>
                         </div>
-                        <div class="doc-arrow">→</div>
+                        <div class="doc-arrow">⬇</div>
                     </a>
                     ` : ''}
 
-                    ${testCases.url ? `
-                    <a href="${testCases.url}" target="_blank" class="doc-link">
+                    ${testCases.download_url ? `
+                    <a href="${API_BASE_URL.replace('/api', '')}${testCases.download_url}" download="${testCases.filename}" class="doc-link">
                         <div class="doc-link-content">
                             <div class="doc-icon">✅</div>
                             <div class="doc-info">
                                 <h4>Test Cases (${data.total_test_cases || 0} cases)</h4>
-                                <p>Detailed test cases with boundary value analysis</p>
+                                <p>Detailed test cases with boundary value analysis (.csv)</p>
                             </div>
                         </div>
-                        <div class="doc-arrow">→</div>
+                        <div class="doc-arrow">⬇</div>
                     </a>
                     ` : ''}
 
-                    ${exploratory.url ? `
-                    <a href="${exploratory.url}" target="_blank" class="doc-link">
+                    ${exploratory.download_url ? `
+                    <a href="${API_BASE_URL.replace('/api', '')}${exploratory.download_url}" download="${exploratory.filename}" class="doc-link">
                         <div class="doc-link-content">
                             <div class="doc-icon">🔍</div>
                             <div class="doc-info">
                                 <h4>Exploratory Testing (${data.exploratory_charters || 0} charters)</h4>
-                                <p>Session-based testing charters for edge cases</p>
+                                <p>Session-based testing charters for edge cases (.md)</p>
                             </div>
                         </div>
-                        <div class="doc-arrow">→</div>
+                        <div class="doc-arrow">⬇</div>
                     </a>
                     ` : ''}
                 </div>

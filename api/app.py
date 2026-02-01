@@ -600,9 +600,13 @@ def generate_documentation():
 
         # Save to temp files
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        test_plan_file = os.path.join(TMP_DIR, f'test_plan_{timestamp}.md')
-        test_cases_file = os.path.join(TMP_DIR, f'test_cases_{timestamp}.csv')
-        exploratory_file = os.path.join(TMP_DIR, f'exploratory_{timestamp}.md')
+        test_plan_filename = f'test_plan_{timestamp}.md'
+        test_cases_filename = f'test_cases_{timestamp}.csv'
+        exploratory_filename = f'exploratory_{timestamp}.md'
+
+        test_plan_file = os.path.join(TMP_DIR, test_plan_filename)
+        test_cases_file = os.path.join(TMP_DIR, test_cases_filename)
+        exploratory_file = os.path.join(TMP_DIR, exploratory_filename)
 
         with open(test_plan_file, 'w', encoding='utf-8') as f:
             f.write(test_plan_content)
@@ -613,86 +617,34 @@ def generate_documentation():
         with open(exploratory_file, 'w', encoding='utf-8') as f:
             f.write(exploratory_content)
 
-        # Create Google Docs (if credentials exist)
+        # Return downloadable file information
         result = {
             'summary': f'Successfully generated comprehensive QA documentation for "{feature_name}"',
             'total_test_cases': 20,
             'exploratory_charters': 6,
             'coverage': '100%',
-            'test_plan': {},
-            'test_cases': {},
-            'exploratory_testing': {}
+            'test_plan': {
+                'id': timestamp,
+                'filename': test_plan_filename,
+                'download_url': f'/api/download/{test_plan_filename}',
+                'title': f'{feature_name} - Test Plan',
+                'type': 'markdown'
+            },
+            'test_cases': {
+                'id': timestamp,
+                'filename': test_cases_filename,
+                'download_url': f'/api/download/{test_cases_filename}',
+                'title': f'{feature_name} - Test Cases',
+                'type': 'csv'
+            },
+            'exploratory_testing': {
+                'id': timestamp,
+                'filename': exploratory_filename,
+                'download_url': f'/api/download/{exploratory_filename}',
+                'title': f'{feature_name} - Exploratory Testing',
+                'type': 'markdown'
+            }
         }
-
-        # Try to create real Google Docs
-        global last_google_docs_error
-        google_docs_error = None
-        try:
-            # Add api directory to path for imports
-            api_dir = os.path.dirname(os.path.abspath(__file__))
-            if api_dir not in sys.path:
-                sys.path.insert(0, api_dir)
-
-            from google_docs_simple import create_google_doc, create_google_sheet
-            print("✓ Successfully imported google_docs_simple")
-
-            # Create Test Plan Doc
-            print(f"Creating Test Plan doc: {feature_name} - Test Plan")
-            test_plan_doc = create_google_doc(f'{feature_name} - Test Plan', test_plan_content)
-            if test_plan_doc and 'error' not in test_plan_doc:
-                print(f"✓ Test Plan created: {test_plan_doc['url']}")
-                result['test_plan'] = test_plan_doc
-            else:
-                error_detail = test_plan_doc.get('error', 'Unknown error') if test_plan_doc else 'Function returned None'
-                print(f"✗ Test Plan creation failed: {error_detail}")
-                result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
-                google_docs_error = f"Test Plan: {error_detail}"
-
-            # Create Test Cases Sheet
-            print(f"Creating Test Cases sheet: {feature_name} - Test Cases")
-            test_cases_sheet = create_google_sheet(f'{feature_name} - Test Cases', test_cases_csv)
-            if test_cases_sheet and 'error' not in test_cases_sheet:
-                print(f"✓ Test Cases created: {test_cases_sheet['url']}")
-                result['test_cases'] = test_cases_sheet
-            else:
-                error_detail = test_cases_sheet.get('error', 'Unknown error') if test_cases_sheet else 'Function returned None'
-                print(f"✗ Test Cases creation failed: {error_detail}")
-                result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
-                if google_docs_error:
-                    google_docs_error += f" | Test Cases: {error_detail}"
-                else:
-                    google_docs_error = f"Test Cases: {error_detail}"
-
-            # Create Exploratory Testing Doc
-            print(f"Creating Exploratory Testing doc: {feature_name} - Exploratory Testing")
-            exploratory_doc = create_google_doc(f'{feature_name} - Exploratory Testing', exploratory_content)
-            if exploratory_doc and 'error' not in exploratory_doc:
-                print(f"✓ Exploratory Testing created: {exploratory_doc['url']}")
-                result['exploratory_testing'] = exploratory_doc
-            else:
-                error_detail = exploratory_doc.get('error', 'Unknown error') if exploratory_doc else 'Function returned None'
-                print(f"✗ Exploratory Testing creation failed: {error_detail}")
-                result['exploratory_testing'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Exploratory Testing'}
-                if google_docs_error:
-                    google_docs_error += f" | Exploratory: {error_detail}"
-                else:
-                    google_docs_error = f"Exploratory: {error_detail}"
-
-        except Exception as e:
-            print(f'✗ Google Docs integration error: {e}')
-            import traceback
-            traceback.print_exc()
-            google_docs_error = str(e)
-            last_google_docs_error = str(e)
-            # Fallback to demo links
-            result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
-            result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
-            result['exploratory_testing'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Exploratory Testing'}
-
-        # Add debug info for troubleshooting
-        if google_docs_error:
-            result['debug_info'] = google_docs_error
-            last_google_docs_error = google_docs_error
 
         return jsonify(result)
 
@@ -700,6 +652,39 @@ def generate_documentation():
         print(f'Error: {e}')
         import traceback
         traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/download/<filename>', methods=['GET'])
+def download_file(filename):
+    """Download generated documentation files"""
+    try:
+        from flask import send_file
+
+        # Security: only allow files from TMP_DIR and only .md or .csv files
+        if not (filename.endswith('.md') or filename.endswith('.csv')):
+            return jsonify({'error': 'Invalid file type'}), 400
+
+        file_path = os.path.join(TMP_DIR, filename)
+
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'File not found'}), 404
+
+        # Determine mimetype
+        if filename.endswith('.csv'):
+            mimetype = 'text/csv'
+        else:
+            mimetype = 'text/markdown'
+
+        return send_file(
+            file_path,
+            mimetype=mimetype,
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        print(f'Download error: {e}')
         return jsonify({'error': str(e)}), 500
 
 
