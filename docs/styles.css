@@ -110,17 +110,43 @@ body {
 .history-item {
     padding: 10px 12px;
     border-radius: 6px;
-    cursor: pointer;
     transition: var(--transition);
     font-size: 14px;
     color: rgba(255, 255, 255, 0.8);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .history-item:hover {
     background: rgba(255, 255, 255, 0.1);
+}
+
+.history-item span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.delete-history-btn {
+    flex-shrink: 0;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.7;
+    transition: opacity 0.2s, background 0.2s;
+}
+
+.delete-history-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-footer {
