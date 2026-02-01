@@ -527,6 +527,11 @@ def debug_credentials():
 def cleanup_drive():
     """Delete all files from service account's Drive to free up quota"""
     try:
+        # Add api directory to path for imports
+        api_dir = os.path.dirname(os.path.abspath(__file__))
+        if api_dir not in sys.path:
+            sys.path.insert(0, api_dir)
+
         from google_docs_simple import get_credentials
         from googleapiclient.discovery import build
 
