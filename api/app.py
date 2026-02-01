@@ -1058,7 +1058,7 @@ last_google_docs_error = None
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy', 'service': 'QA Documentation Generator', 'version': '2.0'})
+    return jsonify({'status': 'healthy', 'service': 'QA Documentation Generator', 'version': '2.1-static-only', 'ai_enabled': False})
 
 @app.route('/api/debug/credentials', methods=['GET'])
 def debug_credentials():
@@ -1148,13 +1148,16 @@ def cleanup_drive():
 @app.route('/api/generate', methods=['POST'])
 def generate_documentation():
     """Generate QA documentation from requirements"""
+    import sys
+    sys.stdout.flush()  # Ensure logs are written immediately
 
     try:
-        print("=== Starting documentation generation ===")
+        print("=== GENERATION ENDPOINT CALLED ===", flush=True)
+        print("=== Starting documentation generation ===", flush=True)
 
         # Ensure tmp directory exists
         os.makedirs(TMP_DIR, exist_ok=True)
-        print(f"TMP_DIR: {TMP_DIR} exists: {os.path.exists(TMP_DIR)}")
+        print(f"TMP_DIR: {TMP_DIR} exists: {os.path.exists(TMP_DIR)}", flush=True)
 
         data = request.get_json()
         requirement = data.get('requirement', '')
