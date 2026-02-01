@@ -705,7 +705,37 @@ TC_016,Verify functionality on mobile (Android),Compatibility - Mobile,High,Andr
 TC_017,Verify keyboard-only navigation,Accessibility - Keyboard,High,Keyboard only,N/A,"1. Navigate using Tab key; 2. Complete workflow with keyboard","All elements accessible; Focus indicators visible",,,,Accessibility Testing,REQ-005
 TC_018,Verify screen reader compatibility,Accessibility - Screen Reader,High,Screen reader enabled,N/A,"1. Enable screen reader; 2. Navigate through feature","All labels announced; Error messages read",,,,Accessibility Testing,REQ-005
 TC_019,Verify error message clarity,Usability - Error Handling,High,Application accessible,Invalid data,"1. Enter invalid data; 2. Submit; 3. Read error message","Error message is clear and actionable",,,,Usability Testing,REQ-002
-TC_020,Verify success message,Positive - UI,Medium,Application accessible,Valid data,"1. Complete workflow successfully; 2. Observe success message","Success message displayed; User informed of result",,,,UI Testing,REQ-001"""
+TC_020,Verify success message,Positive - UI,Medium,Application accessible,Valid data,"1. Complete workflow successfully; 2. Observe success message","Success message displayed; User informed of result",,,,UI Testing,REQ-001
+TC_021,Verify concurrent user sessions,Performance - Load,High,Multiple users,10 concurrent users,"1. Login with 10 different users; 2. Perform actions simultaneously","System handles concurrent requests; No data corruption",,,,Load Testing,REQ-006
+TC_022,Verify response time under normal load,Performance - Response Time,High,Application accessible,Valid test data,"1. Execute feature; 2. Measure response time","Response time < 2 seconds",,,,Performance Testing,REQ-006
+TC_023,Verify data persistence,Positive - Database,Critical,Application accessible,Valid data,"1. Submit data; 2. Refresh page; 3. Verify data","Data persisted correctly in database",,,,Database Testing,REQ-007
+TC_024,Verify data validation on backend,Negative - API,Critical,API accessible,Invalid data,"1. Send invalid data via API; 2. Check response","Backend rejects invalid data; Returns error",,,,API Testing,REQ-003
+TC_025,Verify session timeout,Security - Session,High,User logged in,Wait 30 minutes,"1. Login; 2. Wait for timeout period; 3. Try action","Session expired; User redirected to login",,,,Security Testing,REQ-003
+TC_026,Verify CSRF token validation,Security - CSRF,Critical,Application accessible,Modified CSRF token,"1. Intercept request; 2. Modify CSRF token; 3. Submit","Request rejected; CSRF validation enforced",,,,Security Testing,REQ-003
+TC_027,Verify password complexity requirements,Security - Validation,Critical,Registration page,Weak password,"1. Enter password without numbers; 2. Submit","Error message; Password requirements shown",,,,Security Testing,REQ-003
+TC_028,Verify account lockout after failed attempts,Security - Brute Force,High,Login page,Invalid credentials,"1. Enter wrong password 5 times","Account locked; Lockout message displayed",,,,Security Testing,REQ-003
+TC_029,Verify file upload size limit,Negative - Upload,High,File upload feature,File > max size,"1. Select large file; 2. Upload","Error message; File rejected",,,,Boundary Value Analysis,REQ-008
+TC_030,Verify file upload type validation,Negative - Upload,High,File upload feature,Invalid file type,"1. Select .exe file; 2. Upload","Error message; Only allowed types accepted",,,,Security Testing,REQ-008
+TC_031,Verify email format validation,Negative - Validation,High,Email field,Invalid email format,"1. Enter invalid email (test@); 2. Submit","Error message; Email format validation enforced",,,,Validation Testing,REQ-002
+TC_032,Verify numeric field accepts only numbers,Negative - Validation,High,Numeric input field,Alphabetic characters,"1. Enter letters in number field; 2. Submit","Error message or input blocked",,,,Validation Testing,REQ-002
+TC_033,Verify date picker functionality,Positive - UI,Medium,Date field,Valid date,"1. Open date picker; 2. Select date; 3. Submit","Date selected correctly; Proper format displayed",,,,UI Testing,REQ-001
+TC_034,Verify dropdown selection,Positive - UI,Medium,Dropdown field,Valid option,"1. Click dropdown; 2. Select option; 3. Submit","Selected value saved correctly",,,,UI Testing,REQ-001
+TC_035,Verify checkbox functionality,Positive - UI,Medium,Checkbox field,Check/uncheck,"1. Check checkbox; 2. Submit; 3. Verify","Checkbox state persisted correctly",,,,UI Testing,REQ-001
+TC_036,Verify radio button selection,Positive - UI,Medium,Radio buttons,Select option,"1. Select radio button; 2. Submit","Only one option selected; Value saved",,,,UI Testing,REQ-001
+TC_037,Verify tooltip display,Positive - UI,Low,Hover over icon,N/A,"1. Hover over info icon","Tooltip appears with helpful text",,,,UI Testing,REQ-001
+TC_038,Verify modal popup functionality,Positive - UI,Medium,Modal trigger,N/A,"1. Click button to open modal; 2. Close modal","Modal opens and closes correctly",,,,UI Testing,REQ-001
+TC_039,Verify pagination functionality,Positive - UI,High,Data table,Large dataset,"1. Navigate to page 2; 2. Verify data","Correct data displayed for selected page",,,,UI Testing,REQ-009
+TC_040,Verify search functionality,Positive - Functional,High,Search field,Search term,"1. Enter search term; 2. Submit","Relevant results displayed",,,,Functional Testing,REQ-009
+TC_041,Verify filter functionality,Positive - Functional,High,Filter controls,Filter criteria,"1. Apply filter; 2. View results","Data filtered correctly based on criteria",,,,Functional Testing,REQ-009
+TC_042,Verify sort functionality,Positive - Functional,High,Sortable column,N/A,"1. Click column header to sort","Data sorted in correct order (asc/desc)",,,,Functional Testing,REQ-009
+TC_043,Verify export to CSV functionality,Positive - Export,Medium,Export button,Data present,"1. Click Export CSV button","CSV file downloaded with correct data",,,,Functional Testing,REQ-010
+TC_044,Verify export to PDF functionality,Positive - Export,Medium,Export button,Data present,"1. Click Export PDF button","PDF file generated with formatted data",,,,Functional Testing,REQ-010
+TC_045,Verify undo functionality,Positive - Functional,Medium,Undo button,Action performed,"1. Perform action; 2. Click undo","Action reversed successfully",,,,Functional Testing,REQ-001
+TC_046,Verify redo functionality,Positive - Functional,Medium,Redo button,Undo performed,"1. Undo action; 2. Click redo","Action reapplied successfully",,,,Functional Testing,REQ-001
+TC_047,Verify responsive design on tablet,Compatibility - Responsive,High,Tablet device,N/A,"1. Open on tablet; 2. Test all features","Layout adapts correctly; All features accessible",,,,Responsive Testing,REQ-004
+TC_048,Verify functionality in offline mode,Negative - Network,Medium,Network disabled,N/A,"1. Disable network; 2. Try to perform action","Appropriate offline message displayed",,,,Network Testing,REQ-011
+TC_049,Verify loading indicators,Positive - UX,Medium,Slow connection,Large data load,"1. Perform action that takes time","Loading spinner/progress bar displayed",,,,UX Testing,REQ-001
+TC_050,Verify notification system,Positive - Functional,High,Notification trigger,Event occurs,"1. Trigger notification; 2. Verify display","Notification appears with correct message",,,,Functional Testing,REQ-012"""
 
     return csv_content
 
