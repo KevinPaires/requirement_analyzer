@@ -1177,14 +1177,12 @@ def generate_documentation():
         # Generate content - PDF for test plan, CSV for test cases and exploratory
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
-        # Test Plan as Markdown (PDF generation disabled due to Railway compatibility issues)
-        print("Generating test plan markdown...")
-        test_plan_filename = f'test_plan_{timestamp}.md'
+        # Test Plan as PDF
+        print("Generating test plan PDF...")
+        test_plan_filename = f'test_plan_{timestamp}.pdf'
         test_plan_file = os.path.join(TMP_DIR, test_plan_filename)
-        test_plan_md = generate_test_plan_content(requirement)
-        with open(test_plan_file, 'w', encoding='utf-8') as f:
-            f.write(test_plan_md)
-        print(f"✓ Test plan markdown generated: {test_plan_filename}")
+        generate_test_plan_pdf(requirement, feature_name, test_plan_file)
+        print(f"✓ Test plan PDF generated: {test_plan_filename}")
 
         # Test Cases as CSV
         print("Generating test cases CSV...")
@@ -1218,7 +1216,7 @@ def generate_documentation():
                 'filename': test_plan_filename,
                 'download_url': f'/api/download/{test_plan_filename}',
                 'title': f'{feature_name} - Test Plan',
-                'type': 'md'
+                'type': 'pdf'
             },
             'test_cases': {
                 'id': timestamp,
