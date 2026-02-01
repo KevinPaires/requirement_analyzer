@@ -523,6 +523,52 @@ def debug_credentials():
     except Exception as e:
         return jsonify({'error': str(e), 'last_error': last_google_docs_error}), 500
 
+@app.route('/api/debug/cleanup-drive', methods=['POST'])
+def cleanup_drive():
+    """Delete all files from service account's Drive to free up quota"""
+    try:
+        from google_docs_simple import get_credentials
+        from googleapiclient.discovery import build
+
+        creds = get_credentials()
+        if not creds:
+            return jsonify({'error': 'No credentials available'}), 500
+
+        drive_service = build('drive', 'v3', credentials=creds)
+
+        # List all files
+        results = drive_service.files().list(
+            pageSize=1000,
+            fields="files(id, name)"
+        ).execute()
+
+        files = results.get('files', [])
+
+        if not files:
+            return jsonify({'message': 'No files to delete', 'deleted': 0})
+
+        # Delete all files
+        deleted = []
+        failed = []
+
+        for f in files:
+            try:
+                drive_service.files().delete(fileId=f['id']).execute()
+                deleted.append(f['name'])
+            except Exception as e:
+                failed.append({'name': f['name'], 'error': str(e)})
+
+        return jsonify({
+            'message': f'Deleted {len(deleted)} files',
+            'deleted': deleted,
+            'failed': failed,
+            'total_deleted': len(deleted),
+            'total_failed': len(failed)
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @app.route('/api/generate', methods=['POST'])
 def generate_documentation():
