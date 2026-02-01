@@ -50,8 +50,9 @@ def create_google_doc(title, content):
         print(f"Attempting to create Google Doc: {title}")
         creds = get_credentials()
         if not creds:
-            print("No credentials available")
-            return None
+            error_msg = "No credentials available"
+            print(error_msg)
+            return {'error': error_msg}
 
         print("Building docs service...")
         docs_service = build('docs', 'v1', credentials=creds)
@@ -84,17 +85,20 @@ def create_google_doc(title, content):
         }
 
     except Exception as e:
-        print(f'Error creating Google Doc: {e}')
+        error_msg = f'Error creating Google Doc: {e}'
+        print(error_msg)
         import traceback
         traceback.print_exc()
-        return None
+        return {'error': error_msg}
 
 def create_google_sheet(title, csv_data):
     """Create a Google Sheet with CSV data"""
     try:
         creds = get_credentials()
         if not creds:
-            return None
+            error_msg = "No credentials available"
+            print(error_msg)
+            return {'error': error_msg}
 
         sheets_service = build('sheets', 'v4', credentials=creds)
 
@@ -155,5 +159,6 @@ def create_google_sheet(title, csv_data):
         }
 
     except Exception as e:
-        print(f'Error creating Google Sheet: {e}')
-        return None
+        error_msg = f'Error creating Google Sheet: {e}'
+        print(error_msg)
+        return {'error': error_msg}

@@ -588,35 +588,44 @@ def generate_documentation():
             # Create Test Plan Doc
             print(f"Creating Test Plan doc: {feature_name} - Test Plan")
             test_plan_doc = create_google_doc(f'{feature_name} - Test Plan', test_plan_content)
-            if test_plan_doc:
+            if test_plan_doc and 'error' not in test_plan_doc:
                 print(f"✓ Test Plan created: {test_plan_doc['url']}")
                 result['test_plan'] = test_plan_doc
             else:
-                print("✗ Test Plan creation returned None")
+                error_detail = test_plan_doc.get('error', 'Unknown error') if test_plan_doc else 'Function returned None'
+                print(f"✗ Test Plan creation failed: {error_detail}")
                 result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
-                google_docs_error = "Test Plan creation failed"
+                google_docs_error = f"Test Plan: {error_detail}"
 
             # Create Test Cases Sheet
             print(f"Creating Test Cases sheet: {feature_name} - Test Cases")
             test_cases_sheet = create_google_sheet(f'{feature_name} - Test Cases', test_cases_csv)
-            if test_cases_sheet:
+            if test_cases_sheet and 'error' not in test_cases_sheet:
                 print(f"✓ Test Cases created: {test_cases_sheet['url']}")
                 result['test_cases'] = test_cases_sheet
             else:
-                print("✗ Test Cases creation returned None")
+                error_detail = test_cases_sheet.get('error', 'Unknown error') if test_cases_sheet else 'Function returned None'
+                print(f"✗ Test Cases creation failed: {error_detail}")
                 result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
-                google_docs_error = "Test Cases creation failed"
+                if google_docs_error:
+                    google_docs_error += f" | Test Cases: {error_detail}"
+                else:
+                    google_docs_error = f"Test Cases: {error_detail}"
 
             # Create Exploratory Testing Doc
             print(f"Creating Exploratory Testing doc: {feature_name} - Exploratory Testing")
             exploratory_doc = create_google_doc(f'{feature_name} - Exploratory Testing', exploratory_content)
-            if exploratory_doc:
+            if exploratory_doc and 'error' not in exploratory_doc:
                 print(f"✓ Exploratory Testing created: {exploratory_doc['url']}")
                 result['exploratory_testing'] = exploratory_doc
             else:
-                print("✗ Exploratory Testing creation returned None")
+                error_detail = exploratory_doc.get('error', 'Unknown error') if exploratory_doc else 'Function returned None'
+                print(f"✗ Exploratory Testing creation failed: {error_detail}")
                 result['exploratory_testing'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Exploratory Testing'}
-                google_docs_error = "Exploratory Testing creation failed"
+                if google_docs_error:
+                    google_docs_error += f" | Exploratory: {error_detail}"
+                else:
+                    google_docs_error = f"Exploratory: {error_detail}"
 
         except Exception as e:
             print(f'✗ Google Docs integration error: {e}')
