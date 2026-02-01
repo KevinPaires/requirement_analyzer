@@ -538,6 +538,7 @@ def generate_documentation():
         }
 
         # Try to create real Google Docs
+        google_docs_error = None
         try:
             # Add api directory to path for imports
             api_dir = os.path.dirname(os.path.abspath(__file__))
@@ -545,35 +546,54 @@ def generate_documentation():
                 sys.path.insert(0, api_dir)
 
             from google_docs_simple import create_google_doc, create_google_sheet
-            print("Successfully imported google_docs_simple")
+            print("✓ Successfully imported google_docs_simple")
 
             # Create Test Plan Doc
+            print(f"Creating Test Plan doc: {feature_name} - Test Plan")
             test_plan_doc = create_google_doc(f'{feature_name} - Test Plan', test_plan_content)
             if test_plan_doc:
+                print(f"✓ Test Plan created: {test_plan_doc['url']}")
                 result['test_plan'] = test_plan_doc
             else:
+                print("✗ Test Plan creation returned None")
                 result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
+                google_docs_error = "Test Plan creation failed"
 
             # Create Test Cases Sheet
+            print(f"Creating Test Cases sheet: {feature_name} - Test Cases")
             test_cases_sheet = create_google_sheet(f'{feature_name} - Test Cases', test_cases_csv)
             if test_cases_sheet:
+                print(f"✓ Test Cases created: {test_cases_sheet['url']}")
                 result['test_cases'] = test_cases_sheet
             else:
+                print("✗ Test Cases creation returned None")
                 result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
+                google_docs_error = "Test Cases creation failed"
 
             # Create Exploratory Testing Doc
+            print(f"Creating Exploratory Testing doc: {feature_name} - Exploratory Testing")
             exploratory_doc = create_google_doc(f'{feature_name} - Exploratory Testing', exploratory_content)
             if exploratory_doc:
+                print(f"✓ Exploratory Testing created: {exploratory_doc['url']}")
                 result['exploratory_testing'] = exploratory_doc
             else:
+                print("✗ Exploratory Testing creation returned None")
                 result['exploratory_testing'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Exploratory Testing'}
+                google_docs_error = "Exploratory Testing creation failed"
 
         except Exception as e:
-            print(f'Google Docs integration error: {e}')
+            print(f'✗ Google Docs integration error: {e}')
+            import traceback
+            traceback.print_exc()
+            google_docs_error = str(e)
             # Fallback to demo links
             result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
             result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
             result['exploratory_testing'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Exploratory Testing'}
+
+        # Add debug info for troubleshooting
+        if google_docs_error:
+            result['debug_info'] = google_docs_error
 
         return jsonify(result)
 
