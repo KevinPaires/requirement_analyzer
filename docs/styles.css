@@ -160,7 +160,10 @@ body {
 .messages {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
+    max-height: calc(100vh - 140px);
+    min-height: 0;
 }
 
 /* Welcome Screen */

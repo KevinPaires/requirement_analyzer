@@ -363,7 +363,7 @@ function addResultMessage(data) {
                             <div class="doc-icon">📄</div>
                             <div class="doc-info">
                                 <h4>Test Plan</h4>
-                                <p>Comprehensive test strategy, scope, and schedule (.md)</p>
+                                <p>Comprehensive test strategy, scope, and schedule (.csv)</p>
                             </div>
                         </div>
                         <div class="doc-arrow">⬇</div>
@@ -389,7 +389,7 @@ function addResultMessage(data) {
                             <div class="doc-icon">🔍</div>
                             <div class="doc-info">
                                 <h4>Exploratory Testing (${data.exploratory_charters || 0} charters)</h4>
-                                <p>Session-based testing charters for edge cases (.md)</p>
+                                <p>Session-based testing charters for edge cases (.csv)</p>
                             </div>
                         </div>
                         <div class="doc-arrow">⬇</div>
@@ -436,16 +436,43 @@ function loadHistory() {
         return;
     }
 
-    history.forEach(item => {
+    history.forEach((item, index) => {
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
-        historyItem.textContent = item.requirement;
-        historyItem.title = item.requirement;
 
-        historyItem.addEventListener('click', () => {
+        const textSpan = document.createElement('span');
+        textSpan.textContent = item.requirement;
+        textSpan.title = item.requirement;
+        textSpan.style.flex = '1';
+        textSpan.style.cursor = 'pointer';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '×';
+        deleteBtn.className = 'delete-history-btn';
+        deleteBtn.title = 'Delete';
+        deleteBtn.style.cssText = 'margin-left: 8px; padding: 2px 8px; background: rgba(255,255,255,0.1); border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 18px; opacity: 0.7; transition: opacity 0.2s;';
+
+        deleteBtn.addEventListener('mouseenter', () => {
+            deleteBtn.style.opacity = '1';
+            deleteBtn.style.background = 'rgba(255,255,255,0.2)';
+        });
+
+        deleteBtn.addEventListener('mouseleave', () => {
+            deleteBtn.style.opacity = '0.7';
+            deleteBtn.style.background = 'rgba(255,255,255,0.1)';
+        });
+
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteHistoryItem(index);
+        });
+
+        textSpan.addEventListener('click', () => {
             loadHistoryItem(item);
         });
 
+        historyItem.appendChild(textSpan);
+        historyItem.appendChild(deleteBtn);
         historyList.appendChild(historyItem);
     });
 }
@@ -465,6 +492,14 @@ function loadHistoryItem(item) {
     addResultMessage(item.data);
 
     currentSessionId = item.id;
+}
+
+// Delete history item
+function deleteHistoryItem(index) {
+    const history = getHistory();
+    history.splice(index, 1);
+    localStorage.setItem('qa_generator_history', JSON.stringify(history));
+    loadHistory();
 }
 
 // Utility functions

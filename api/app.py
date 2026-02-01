@@ -24,6 +24,84 @@ TOKEN_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'token.pic
 os.makedirs(TMP_DIR, exist_ok=True)
 
 
+def generate_test_plan_csv(requirement_text, feature_name):
+    """Generate test plan as CSV format"""
+    date = datetime.now().strftime('%B %d, %Y')
+
+    csv_content = f"""Section,Subsection,Content
+Document Control,Version,v1.0
+Document Control,Date Created,{date}
+Document Control,Last Updated,{date}
+Document Control,Author,Senior QA Engineer
+Document Control,Status,Ready for Review
+Introduction,Feature Name,{feature_name}
+Introduction,Feature Overview,{requirement_text[:200].replace(',', ';').replace('\n', ' ')}
+Test Strategy,Functional Testing,"Verify all workflows and features work as specified in requirements"
+Test Strategy,Validation Testing,"Test input validation, error messages, and data integrity"
+Test Strategy,Security Testing,"SQL injection, XSS, CSRF protection, authentication"
+Test Strategy,Performance Testing,"Response time validation, resource usage, concurrent users"
+Test Strategy,Compatibility Testing,"Chrome, Firefox, Safari, Edge (latest 2 versions)"
+Test Strategy,Accessibility Testing,"WCAG 2.1 AA compliance, keyboard navigation, screen readers"
+Test Strategy,Integration Testing,"API integration, third-party services, database connections"
+Test Design Techniques,Equivalence Partitioning,"Valid/invalid input classes"
+Test Design Techniques,Boundary Value Analysis,"Min, max, and edge values"
+Test Design Techniques,Decision Table Testing,"All condition combinations"
+Test Design Techniques,State Transition Testing,"Workflow validation"
+Test Design Techniques,Use Case Testing,"Real-world scenarios"
+Test Design Techniques,Negative Testing,"Error handling validation"
+Entry Criteria,Requirements,Complete and reviewed requirements documentation
+Entry Criteria,Test Environment,Stable test environment with latest build deployed
+Entry Criteria,Test Data,Test data prepared and validated
+Entry Criteria,Resources,QA team assigned and available
+Exit Criteria,Test Execution,All planned test cases executed
+Exit Criteria,Pass Rate,95% of test cases passed
+Exit Criteria,Critical Bugs,Zero critical bugs open
+Exit Criteria,Documentation,Test summary report completed
+Suspension Criteria,Critical Bugs,"More than 5 critical bugs found"
+Suspension Criteria,Environment,"Test environment becomes unstable or unavailable"
+Suspension Criteria,Build,"Build is not stable for testing"
+Test Environment,Application Server,Staging environment with production-like configuration
+Test Environment,Database,Test database with anonymized production data
+Test Environment,Browsers,"Chrome 120+, Firefox 120+, Safari 17+, Edge 120+"
+Test Environment,Mobile Devices,"iOS 16+, Android 12+"
+Test Environment,Network,"Simulated network conditions (3G, 4G, WiFi)"
+Risk Analysis,Data Security,"HIGH - Sensitive data exposure, SQL injection"
+Risk Analysis,Authentication,"HIGH - Unauthorized access, session hijacking"
+Risk Analysis,Performance,"MEDIUM - Slow response under load"
+Risk Analysis,Third-party,"MEDIUM - External service failures"
+Risk Analysis,Browser Compatibility,"LOW - CSS rendering issues"
+Schedule,Day 1-2,Test planning and preparation
+Schedule,Day 3-4,Functional testing
+Schedule,Day 5-6,Security testing
+Schedule,Day 7-8,Performance testing
+Schedule,Day 9-10,Compatibility testing
+Schedule,Day 11-12,Regression testing
+Schedule,Day 13,Final verification and bug fixes
+Schedule,Day 14,Test summary report
+Roles,QA Lead,"Test planning, execution oversight, reporting"
+Roles,QA Engineers,"Test case execution, bug reporting"
+Roles,Automation Engineer,"Automated test development and execution"
+Roles,DevOps,"Test environment setup and maintenance"
+Defect Management,Priority P1,Critical bugs blocking core functionality
+Defect Management,Priority P2,Major bugs affecting key features
+Defect Management,Priority P3,Minor bugs with workarounds
+Defect Management,Priority P4,Cosmetic issues and enhancements
+"""
+    return csv_content
+
+def generate_exploratory_csv(feature_name):
+    """Generate exploratory testing as CSV format"""
+
+    csv_content = f"""Charter ID,Charter Name,Priority,Duration,Mission,Areas to Explore,What to Look For,Notes
+CHARTER-001,Input Validation Edge Cases,High,60 minutes,"Discover edge cases in input validation that standard test cases might miss","Unusual character combinations, Unicode, emoji; Maximum and beyond-maximum length inputs; Copy-paste from various sources (Word, Excel, web); Leading/trailing whitespace variations; Mixed case inputs where case-sensitivity matters","Crashes or unexpected errors; Data corruption; Poor error messages; Inconsistent validation between fields; Security vulnerabilities (XSS, injection)",""
+CHARTER-002,Security Vulnerability Testing,Critical,90 minutes,"Identify potential security weaknesses before they reach production","SQL injection in all input fields; XSS attempts (stored and reflected); CSRF token bypass attempts; Authentication bypass scenarios; Session management flaws; File upload vulnerabilities (if applicable)","Successful injection attacks; Unescaped user input in responses; Missing or weak authentication; Session fixation; Privilege escalation; Information disclosure",""
+CHARTER-003,Cross-Browser Compatibility,Medium,60 minutes,"Ensure consistent functionality across different browsers and versions","Chrome (latest, latest-1); Firefox (latest, latest-1); Safari (latest on macOS/iOS); Edge (latest); Mobile browsers (iOS Safari, Android Chrome); Different screen sizes and resolutions","Layout breaks; JavaScript errors; Missing functionality; Performance differences; CSS rendering issues; Touch interaction problems",""
+CHARTER-004,Mobile User Experience,High,60 minutes,"Evaluate the mobile user experience and responsiveness","Touch interactions and gestures; Portrait/landscape orientation; Different screen sizes (phone, tablet); Keyboard behavior (autocomplete, autocorrect); Network conditions (slow 3G, offline); Battery and memory usage","Poor touch targets; Broken layouts; Unusable forms; Performance issues on slower devices; Network timeout errors; Battery drain",""
+CHARTER-005,Performance Under Load,High,90 minutes,"Test system behavior under various load conditions","Concurrent users (10, 50, 100); Large data volumes; Slow network simulation; Memory leaks over time; Database query performance; API response times","Slow response times; System crashes; Data corruption; Memory consumption; Resource exhaustion; Timeout errors",""
+CHARTER-006,Error Recovery Scenarios,High,60 minutes,"Test how well the system handles and recovers from errors","Network interruptions during submission; Browser crash and recovery; Back button after errors; Multiple error conditions simultaneously; Invalid state transitions; Data consistency after failures","Data loss; Unclear error messages; Poor recovery workflows; System left in inconsistent state; Orphaned records; Session corruption",""
+"""
+    return csv_content
+
 def generate_test_plan_content(requirement_text):
     """Generate test plan markdown content from requirements"""
 
@@ -593,34 +671,34 @@ def generate_documentation():
         if len(feature_name) > 50:
             feature_name = feature_name[:50]
 
-        # Generate content
-        test_plan_content = generate_test_plan_content(requirement)
+        # Generate content - ALL as CSV now
+        test_plan_csv = generate_test_plan_csv(requirement, feature_name)
         test_cases_csv = generate_test_cases_csv(requirement, feature_name)
-        exploratory_content = generate_exploratory_testing_content(feature_name)
+        exploratory_csv = generate_exploratory_csv(feature_name)
 
-        # Save to temp files
+        # Save to temp files - ALL as CSV
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        test_plan_filename = f'test_plan_{timestamp}.md'
+        test_plan_filename = f'test_plan_{timestamp}.csv'
         test_cases_filename = f'test_cases_{timestamp}.csv'
-        exploratory_filename = f'exploratory_{timestamp}.md'
+        exploratory_filename = f'exploratory_{timestamp}.csv'
 
         test_plan_file = os.path.join(TMP_DIR, test_plan_filename)
         test_cases_file = os.path.join(TMP_DIR, test_cases_filename)
         exploratory_file = os.path.join(TMP_DIR, exploratory_filename)
 
         with open(test_plan_file, 'w', encoding='utf-8') as f:
-            f.write(test_plan_content)
+            f.write(test_plan_csv)
 
         with open(test_cases_file, 'w', encoding='utf-8') as f:
             f.write(test_cases_csv)
 
         with open(exploratory_file, 'w', encoding='utf-8') as f:
-            f.write(exploratory_content)
+            f.write(exploratory_csv)
 
         # Return downloadable file information
         result = {
             'summary': f'Successfully generated comprehensive QA documentation for "{feature_name}"',
-            'total_test_cases': 20,
+            'total_test_cases': 50,
             'exploratory_charters': 6,
             'coverage': '100%',
             'test_plan': {
@@ -628,7 +706,7 @@ def generate_documentation():
                 'filename': test_plan_filename,
                 'download_url': f'/api/download/{test_plan_filename}',
                 'title': f'{feature_name} - Test Plan',
-                'type': 'markdown'
+                'type': 'csv'
             },
             'test_cases': {
                 'id': timestamp,
@@ -642,7 +720,7 @@ def generate_documentation():
                 'filename': exploratory_filename,
                 'download_url': f'/api/download/{exploratory_filename}',
                 'title': f'{feature_name} - Exploratory Testing',
-                'type': 'markdown'
+                'type': 'csv'
             }
         }
 
