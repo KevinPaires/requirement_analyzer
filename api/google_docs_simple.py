@@ -8,7 +8,7 @@ from googleapiclient.discovery import build
 
 SCOPES = [
     'https://www.googleapis.com/auth/documents',
-    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive',
     'https://www.googleapis.com/auth/spreadsheets'
 ]
 
@@ -54,14 +54,27 @@ def create_google_doc(title, content):
             print(error_msg)
             return {'error': error_msg}
 
-        print("Building docs service...")
+        print("Building services...")
         docs_service = build('docs', 'v1', credentials=creds)
+        drive_service = build('drive', 'v3', credentials=creds)
 
         # Create document
         print("Creating document...")
         doc = docs_service.documents().create(body={'title': title}).execute()
         doc_id = doc.get('documentId')
         print(f"Document created with ID: {doc_id}")
+
+        # Make the document publicly accessible
+        print("Sharing document...")
+        drive_service.permissions().create(
+            fileId=doc_id,
+            body={
+                'type': 'anyone',
+                'role': 'writer'
+            },
+            fields='id'
+        ).execute()
+        print("Document shared with anyone who has the link")
 
         # Add content
         print("Adding content...")
@@ -101,6 +114,7 @@ def create_google_sheet(title, csv_data):
             return {'error': error_msg}
 
         sheets_service = build('sheets', 'v4', credentials=creds)
+        drive_service = build('drive', 'v3', credentials=creds)
 
         # Create spreadsheet
         spreadsheet = {
@@ -112,6 +126,18 @@ def create_google_sheet(title, csv_data):
         ).execute()
 
         sheet_id = sheet.get('spreadsheetId')
+
+        # Make the spreadsheet publicly accessible
+        print(f"Sharing spreadsheet {sheet_id}...")
+        drive_service.permissions().create(
+            fileId=sheet_id,
+            body={
+                'type': 'anyone',
+                'role': 'writer'
+            },
+            fields='id'
+        ).execute()
+        print("Spreadsheet shared with anyone who has the link")
 
         # Add data (parse CSV)
         import csv
