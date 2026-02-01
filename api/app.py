@@ -692,43 +692,23 @@ def generate_test_cases_with_ai(requirement_text, feature_name):
 
         client = Anthropic(api_key=api_key)
 
-        prompt = f"""You are a senior QA engineer. Generate exactly 50 comprehensive test cases for the following feature requirements.
+        prompt = f"""Generate 50 test cases for: {feature_name}
 
-Feature Name: {feature_name}
+Requirements: {requirement_text[:500]}
 
-Requirements:
-{requirement_text}
+Cover: Functional, Boundary Value, Security, Performance, Usability, Compatibility, Accessibility, Integration, Negative, Regression testing.
 
-Generate test cases that cover:
-1. Functional testing (happy path and edge cases)
-2. Boundary value analysis (testing min, max, min-1, max+1 values)
-3. Security testing (SQL injection, XSS, authentication, authorization)
-4. Performance testing (load, stress, response time)
-5. Usability testing (error messages, user experience)
-6. Compatibility testing (browsers, devices, screen sizes)
-7. Accessibility testing (keyboard navigation, screen readers, WCAG compliance)
-8. Integration testing (APIs, third-party services, database)
-9. Negative testing (invalid inputs, error handling)
-10. Regression testing (existing functionality not broken)
+CSV format (EXACTLY 50 rows TC_001 to TC_050):
+Test Case ID,Description,Category,Priority,Preconditions,Test Data,Steps to Reproduce,Expected Result,Actual Result,Pass/Fail,Bug ID,Test Design Technique,Requirement ID
 
-CRITICAL REQUIREMENTS:
-- Generate EXACTLY 50 test cases, no more, no less (TC_001 through TC_050)
-- STOP at TC_050 - do not generate TC_051 or beyond
-- Use CSV format with these exact columns: Test Case ID,Description,Category,Priority,Preconditions,Test Data,Steps to Reproduce,Expected Result,Actual Result,Pass/Fail,Bug ID,Test Design Technique,Requirement ID
-- Test Case IDs must be TC_001, TC_002, ..., TC_050
-- Make test cases specific to the given requirements
-- Use professional QA terminology
-- Priority must be: Critical, High, Medium, or Low
-- Test Design Technique should reference actual QA techniques (Equivalence Partitioning, Boundary Value Analysis, Decision Table Testing, State Transition Testing, Use Case Testing, etc.)
-- Steps to Reproduce should be numbered and clear
-- Expected Result should be specific and measurable
+Priority: Critical/High/Medium/Low
+Return ONLY CSV data, no explanations."""
 
-OUTPUT FORMAT:
-Return ONLY the CSV content, starting with the header row. Do not include any explanations, markdown formatting, or additional text. Just the raw CSV data."""
-
+        # Use lower max_tokens to speed up generation (Railway has 30s timeout)
         message = client.messages.create(
             model="claude-sonnet-4-5-20250929",
-            max_tokens=8000,
+            max_tokens=4000,  # Reduced from 8000 to speed up generation
+            timeout=20.0,  # 20 second timeout to leave buffer for other operations
             messages=[{"role": "user", "content": prompt}]
         )
 
@@ -761,9 +741,13 @@ Return ONLY the CSV content, starting with the header row. Do not include any ex
         return csv_content
 
     except Exception as e:
-        print(f"Error generating test cases with AI: {e}")
-        import traceback
-        traceback.print_exc()
+        error_msg = str(e).lower()
+        if 'timeout' in error_msg or 'timed out' in error_msg:
+            print(f"AI generation timed out after 20s, using fallback: {e}")
+        else:
+            print(f"Error generating test cases with AI: {e}")
+            import traceback
+            traceback.print_exc()
         return None
 
 
