@@ -1113,8 +1113,8 @@ def download_file(filename):
     try:
         from flask import send_file
 
-        # Security: only allow files from TMP_DIR and only .md or .csv files
-        if not (filename.endswith('.md') or filename.endswith('.csv')):
+        # Security: only allow files from TMP_DIR and only .md, .csv, or .pdf files
+        if not (filename.endswith('.md') or filename.endswith('.csv') or filename.endswith('.pdf')):
             return jsonify({'error': 'Invalid file type'}), 400
 
         file_path = os.path.join(TMP_DIR, filename)
@@ -1125,6 +1125,8 @@ def download_file(filename):
         # Determine mimetype
         if filename.endswith('.csv'):
             mimetype = 'text/csv'
+        elif filename.endswith('.pdf'):
+            mimetype = 'application/pdf'
         else:
             mimetype = 'text/markdown'
 
