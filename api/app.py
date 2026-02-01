@@ -15,6 +15,7 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from anthropic import Anthropic
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -681,10 +682,82 @@ End of Test Plan
     return content
 
 
-def generate_test_cases_csv(requirement_text, feature_name):
-    """Generate test cases CSV content"""
+def generate_test_cases_with_ai(requirement_text, feature_name):
+    """Generate test cases using Claude AI"""
+    try:
+        api_key = os.environ.get('ANTHROPIC_API_KEY')
+        if not api_key:
+            print("WARNING: ANTHROPIC_API_KEY not found, using fallback static generation")
+            return None
 
-    # This is a simplified version - in production, you'd use AI or more sophisticated generation
+        client = Anthropic(api_key=api_key)
+
+        prompt = f"""You are a senior QA engineer. Generate exactly 50 comprehensive test cases for the following feature requirements.
+
+Feature Name: {feature_name}
+
+Requirements:
+{requirement_text}
+
+Generate test cases that cover:
+1. Functional testing (happy path and edge cases)
+2. Boundary value analysis (testing min, max, min-1, max+1 values)
+3. Security testing (SQL injection, XSS, authentication, authorization)
+4. Performance testing (load, stress, response time)
+5. Usability testing (error messages, user experience)
+6. Compatibility testing (browsers, devices, screen sizes)
+7. Accessibility testing (keyboard navigation, screen readers, WCAG compliance)
+8. Integration testing (APIs, third-party services, database)
+9. Negative testing (invalid inputs, error handling)
+10. Regression testing (existing functionality not broken)
+
+CRITICAL REQUIREMENTS:
+- Generate EXACTLY 50 test cases, no more, no less
+- Use CSV format with these exact columns: Test Case ID,Description,Category,Priority,Preconditions,Test Data,Steps to Reproduce,Expected Result,Actual Result,Pass/Fail,Bug ID,Test Design Technique,Requirement ID
+- Test Case IDs must be TC_001, TC_002, ..., TC_050
+- Make test cases specific to the given requirements
+- Use professional QA terminology
+- Priority must be: Critical, High, Medium, or Low
+- Test Design Technique should reference actual QA techniques (Equivalence Partitioning, Boundary Value Analysis, Decision Table Testing, State Transition Testing, Use Case Testing, etc.)
+- Steps to Reproduce should be numbered and clear
+- Expected Result should be specific and measurable
+
+OUTPUT FORMAT:
+Return ONLY the CSV content, starting with the header row. Do not include any explanations, markdown formatting, or additional text. Just the raw CSV data."""
+
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=8000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        csv_content = message.content[0].text.strip()
+
+        # Verify we got CSV content
+        if not csv_content.startswith("Test Case ID"):
+            print("WARNING: AI response doesn't look like CSV, using fallback")
+            return None
+
+        # Count test cases
+        lines = csv_content.split('\n')
+        tc_count = sum(1 for line in lines if line.startswith('TC_'))
+        print(f"AI generated {tc_count} test cases")
+
+        if tc_count < 40:  # Allow some flexibility
+            print(f"WARNING: Only {tc_count} test cases generated, using fallback")
+            return None
+
+        return csv_content
+
+    except Exception as e:
+        print(f"Error generating test cases with AI: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+def generate_test_cases_csv_fallback():
+    """Fallback static test cases when AI is unavailable"""
     csv_content = """Test Case ID,Description,Category,Priority,Preconditions,Test Data,Steps to Reproduce,Expected Result,Actual Result,Pass/Fail,Bug ID,Test Design Technique,Requirement ID
 TC_001,Verify happy path with all valid data,Positive - Functional,Critical,Application accessible,Valid test data,"1. Navigate to feature; 2. Enter valid data; 3. Submit","Feature works as expected; Success message displayed",,,,Use Case Testing,REQ-001
 TC_002,Verify required field validation,Negative - Validation,Critical,Application accessible,Empty required fields,"1. Navigate to feature; 2. Leave required field empty; 3. Submit","Error message displayed; Submission blocked",,,,Required Field Validation,REQ-002
@@ -738,6 +811,19 @@ TC_049,Verify loading indicators,Positive - UX,Medium,Slow connection,Large data
 TC_050,Verify notification system,Positive - Functional,High,Notification trigger,Event occurs,"1. Trigger notification; 2. Verify display","Notification appears with correct message",,,,Functional Testing,REQ-012"""
 
     return csv_content
+
+
+def generate_test_cases_csv(requirement_text, feature_name):
+    """Main test case generation function with AI fallback"""
+    # Try AI generation first
+    ai_result = generate_test_cases_with_ai(requirement_text, feature_name)
+
+    if ai_result:
+        print("✓ Using AI-generated test cases")
+        return ai_result
+    else:
+        print("✓ Using fallback static test cases")
+        return generate_test_cases_csv_fallback()
 
 
 def generate_exploratory_testing_content(feature_name):
