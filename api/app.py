@@ -539,9 +539,7 @@ def generate_documentation():
 
         # Try to create real Google Docs
         try:
-            # Import at the top level for Railway
-            import sys
-            import os
+            # Add api directory to path for imports
             api_dir = os.path.dirname(os.path.abspath(__file__))
             if api_dir not in sys.path:
                 sys.path.insert(0, api_dir)
