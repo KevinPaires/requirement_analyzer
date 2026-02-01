@@ -712,7 +712,8 @@ Generate test cases that cover:
 10. Regression testing (existing functionality not broken)
 
 CRITICAL REQUIREMENTS:
-- Generate EXACTLY 50 test cases, no more, no less
+- Generate EXACTLY 50 test cases, no more, no less (TC_001 through TC_050)
+- STOP at TC_050 - do not generate TC_051 or beyond
 - Use CSV format with these exact columns: Test Case ID,Description,Category,Priority,Preconditions,Test Data,Steps to Reproduce,Expected Result,Actual Result,Pass/Fail,Bug ID,Test Design Technique,Requirement ID
 - Test Case IDs must be TC_001, TC_002, ..., TC_050
 - Make test cases specific to the given requirements
@@ -740,12 +741,22 @@ Return ONLY the CSV content, starting with the header row. Do not include any ex
 
         # Count test cases
         lines = csv_content.split('\n')
-        tc_count = sum(1 for line in lines if line.startswith('TC_'))
+        tc_lines = [line for line in lines if line.startswith('TC_')]
+        tc_count = len(tc_lines)
         print(f"AI generated {tc_count} test cases")
 
-        if tc_count < 40:  # Allow some flexibility
+        if tc_count < 40:  # Too few test cases
             print(f"WARNING: Only {tc_count} test cases generated, using fallback")
             return None
+
+        # If AI generated more than 50, trim to exactly 50
+        if tc_count > 50:
+            print(f"WARNING: AI generated {tc_count} test cases, trimming to 50")
+            # Get header line
+            header = [line for line in lines if line.startswith('Test Case ID')][0]
+            # Take first 50 test cases
+            trimmed_lines = [header] + tc_lines[:50]
+            csv_content = '\n'.join(trimmed_lines)
 
         return csv_content
 
@@ -1178,6 +1189,9 @@ def generate_documentation():
         with open(test_cases_file, 'w', encoding='utf-8') as f:
             f.write(test_cases_csv)
 
+        # Count actual test cases generated
+        tc_count = len([line for line in test_cases_csv.split('\n') if line.startswith('TC_')])
+
         # Exploratory Testing as CSV
         exploratory_csv = generate_exploratory_csv(feature_name)
         exploratory_filename = f'exploratory_{timestamp}.csv'
@@ -1188,7 +1202,7 @@ def generate_documentation():
         # Return downloadable file information
         result = {
             'summary': f'Successfully generated comprehensive QA documentation for "{feature_name}"',
-            'total_test_cases': 50,
+            'total_test_cases': tc_count,
             'exploratory_charters': 6,
             'coverage': '100%',
             'test_plan': {
