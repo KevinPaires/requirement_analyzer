@@ -9,6 +9,12 @@ import os
 import sys
 import json
 from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
 
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -22,6 +28,373 @@ CREDENTIALS_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cre
 TOKEN_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'token.pickle')
 
 os.makedirs(TMP_DIR, exist_ok=True)
+
+
+def generate_test_plan_pdf(requirement_text, feature_name, filename):
+    """Generate professional PDF test plan"""
+    date = datetime.now().strftime('%B %d, %Y')
+    clean_req = requirement_text[:500]
+
+    # Create PDF
+    doc = SimpleDocTemplate(filename, pagesize=letter,
+                           rightMargin=0.75*inch, leftMargin=0.75*inch,
+                           topMargin=0.75*inch, bottomMargin=0.75*inch)
+
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1a1a1a'),
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+
+    heading1_style = ParagraphStyle(
+        'CustomHeading1',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor=colors.HexColor('#2c3e50'),
+        spaceAfter=12,
+        spaceBefore=20,
+        fontName='Helvetica-Bold',
+        borderWidth=1,
+        borderColor=colors.HexColor('#3498db'),
+        borderPadding=8,
+        backColor=colors.HexColor('#ecf0f1')
+    )
+
+    heading2_style = ParagraphStyle(
+        'CustomHeading2',
+        parent=styles['Heading2'],
+        fontSize=14,
+        textColor=colors.HexColor('#34495e'),
+        spaceAfter=10,
+        spaceBefore=15,
+        fontName='Helvetica-Bold'
+    )
+
+    body_style = ParagraphStyle(
+        'CustomBody',
+        parent=styles['BodyText'],
+        fontSize=10,
+        leading=14,
+        spaceAfter=6
+    )
+
+    # Build content
+    story = []
+
+    # Title
+    story.append(Paragraph(f"{feature_name}", title_style))
+    story.append(Paragraph("TEST PLAN", title_style))
+    story.append(Spacer(1, 0.3*inch))
+
+    # Document Control Section
+    story.append(Paragraph("DOCUMENT CONTROL", heading1_style))
+    doc_control_data = [
+        ['Version:', 'v1.0', 'Date Created:', date],
+        ['Last Updated:', date, 'Author:', 'Senior QA Engineer'],
+        ['Status:', 'Ready for Review', '', '']
+    ]
+    doc_control_table = Table(doc_control_data, colWidths=[1.5*inch, 2*inch, 1.5*inch, 2*inch])
+    doc_control_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8f9fa')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.HexColor('#2c3e50')),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (2, 0), (2, -1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dee2e6'))
+    ]))
+    story.append(doc_control_table)
+    story.append(Spacer(1, 0.3*inch))
+
+    # Introduction Section
+    story.append(Paragraph("1. INTRODUCTION & SCOPE", heading1_style))
+    story.append(Paragraph("Feature Overview", heading2_style))
+    story.append(Paragraph(clean_req, body_style))
+    story.append(Spacer(1, 0.15*inch))
+
+    story.append(Paragraph("Objectives of Testing", heading2_style))
+    objectives = [
+        "Verify all functional requirements are implemented correctly",
+        "Validate security measures and data integrity",
+        "Ensure performance targets are met",
+        "Confirm cross-browser and mobile compatibility",
+        "Validate accessibility compliance (WCAG 2.1 AA)"
+    ]
+    for obj in objectives:
+        story.append(Paragraph(f"• {obj}", body_style))
+    story.append(Spacer(1, 0.15*inch))
+
+    story.append(Paragraph("In-Scope Items", heading2_style))
+    in_scope = [
+        "Functional testing of all requirements",
+        "Validation and error handling",
+        "Security testing (SQL injection, XSS, CSRF)",
+        "Performance testing",
+        "Cross-browser compatibility",
+        "Mobile device testing",
+        "Accessibility testing",
+        "Integration testing"
+    ]
+    for item in in_scope:
+        story.append(Paragraph(f"✓ {item}", body_style))
+
+    story.append(PageBreak())
+
+    # Test Strategy Section
+    story.append(Paragraph("2. TEST STRATEGY", heading1_style))
+    story.append(Paragraph("Testing Types", heading2_style))
+
+    test_types_data = [
+        ['Test Type', 'Description'],
+        ['Functional Testing', 'Verify all workflows and features work as specified'],
+        ['Validation Testing', 'Test input validation, error messages, data integrity'],
+        ['Security Testing', 'SQL injection, XSS, CSRF protection, authentication'],
+        ['Performance Testing', 'Response time validation, resource usage, concurrent users'],
+        ['Compatibility Testing', 'Chrome, Firefox, Safari, Edge (latest 2 versions)'],
+        ['Accessibility Testing', 'WCAG 2.1 AA compliance, keyboard navigation, screen readers'],
+        ['Integration Testing', 'API integration, third-party services, database connections']
+    ]
+    test_types_table = Table(test_types_data, colWidths=[2*inch, 4.5*inch])
+    test_types_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498db')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dee2e6')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP')
+    ]))
+    story.append(test_types_table)
+    story.append(Spacer(1, 0.2*inch))
+
+    # Test Design Techniques
+    story.append(Paragraph("Test Design Techniques", heading2_style))
+    techniques_data = [
+        ['Technique', 'Application'],
+        ['Equivalence Partitioning', 'Valid/invalid input classes'],
+        ['Boundary Value Analysis', 'Min, max, and edge values'],
+        ['Decision Table Testing', 'All condition combinations'],
+        ['State Transition Testing', 'Workflow validation'],
+        ['Use Case Testing', 'Real-world scenarios'],
+        ['Negative Testing', 'Error handling validation']
+    ]
+    techniques_table = Table(techniques_data, colWidths=[2.5*inch, 4*inch])
+    techniques_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c3e50')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#bdc3c7'))
+    ]))
+    story.append(techniques_table)
+
+    story.append(PageBreak())
+
+    # Entry and Exit Criteria
+    story.append(Paragraph("3. ENTRY & EXIT CRITERIA", heading1_style))
+
+    story.append(Paragraph("Entry Criteria", heading2_style))
+    entry_criteria_data = [
+        ['Criteria', 'Requirement'],
+        ['Requirements', 'Complete and reviewed requirements documentation'],
+        ['Test Environment', 'Stable test environment with latest build deployed'],
+        ['Test Data', 'Test data prepared and validated'],
+        ['Resources', 'QA team assigned and available']
+    ]
+    entry_table = Table(entry_criteria_data, colWidths=[2*inch, 4.5*inch])
+    entry_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#27ae60')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#e8f8f5')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#27ae60'))
+    ]))
+    story.append(entry_table)
+    story.append(Spacer(1, 0.2*inch))
+
+    story.append(Paragraph("Exit Criteria", heading2_style))
+    exit_criteria_data = [
+        ['Criteria', 'Requirement'],
+        ['Test Execution', 'All planned test cases executed'],
+        ['Pass Rate', '95% of test cases passed'],
+        ['Critical Bugs', 'Zero critical bugs open'],
+        ['Documentation', 'Test summary report completed']
+    ]
+    exit_table = Table(exit_criteria_data, colWidths=[2*inch, 4.5*inch])
+    exit_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#e74c3c')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#fadbd8')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e74c3c'))
+    ]))
+    story.append(exit_table)
+
+    story.append(PageBreak())
+
+    # Test Environment
+    story.append(Paragraph("4. TEST ENVIRONMENT", heading1_style))
+    env_data = [
+        ['Component', 'Specification'],
+        ['Application Server', 'Staging environment with production-like configuration'],
+        ['Database', 'Test database with anonymized production data'],
+        ['Browsers', 'Chrome 120+, Firefox 120+, Safari 17+, Edge 120+'],
+        ['Mobile Devices', 'iOS 16+, Android 12+'],
+        ['Network', 'Simulated network conditions (3G, 4G, WiFi)']
+    ]
+    env_table = Table(env_data, colWidths=[2*inch, 4.5*inch])
+    env_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#34495e')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#95a5a6'))
+    ]))
+    story.append(env_table)
+    story.append(Spacer(1, 0.3*inch))
+
+    # Risk Analysis
+    story.append(Paragraph("5. RISK ANALYSIS", heading1_style))
+    risk_data = [
+        ['Risk Area', 'Severity', 'Mitigation'],
+        ['Data Security', 'HIGH', 'Sensitive data exposure, SQL injection - conduct security testing'],
+        ['Authentication', 'HIGH', 'Unauthorized access, session hijacking - validate auth flows'],
+        ['Performance', 'MEDIUM', 'Slow response under load - performance testing'],
+        ['Third-party Services', 'MEDIUM', 'External service failures - implement fallbacks'],
+        ['Browser Compatibility', 'LOW', 'CSS rendering issues - cross-browser testing']
+    ]
+    risk_table = Table(risk_data, colWidths=[2*inch, 1*inch, 3.5*inch])
+    risk_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#c0392b')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (1, -1), 'LEFT'),
+        ('ALIGN', (1, 1), (1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e74c3c')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP')
+    ]))
+    story.append(risk_table)
+
+    story.append(PageBreak())
+
+    # Test Schedule
+    story.append(Paragraph("6. TEST SCHEDULE", heading1_style))
+    schedule_data = [
+        ['Timeline', 'Activities'],
+        ['Day 1-2', 'Test planning and preparation'],
+        ['Day 3-4', 'Functional testing'],
+        ['Day 5-6', 'Security testing'],
+        ['Day 7-8', 'Performance testing'],
+        ['Day 9-10', 'Compatibility testing'],
+        ['Day 11-12', 'Regression testing'],
+        ['Day 13', 'Final verification and bug fixes'],
+        ['Day 14', 'Test summary report']
+    ]
+    schedule_table = Table(schedule_data, colWidths=[1.5*inch, 5*inch])
+    schedule_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#16a085')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#d5f4e6')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#16a085'))
+    ]))
+    story.append(schedule_table)
+    story.append(Spacer(1, 0.3*inch))
+
+    # Roles and Responsibilities
+    story.append(Paragraph("7. ROLES & RESPONSIBILITIES", heading1_style))
+    roles_data = [
+        ['Role', 'Responsibilities'],
+        ['QA Lead', 'Test planning, execution oversight, reporting'],
+        ['QA Engineers', 'Test case execution, bug reporting'],
+        ['Automation Engineer', 'Automated test development and execution'],
+        ['DevOps', 'Test environment setup and maintenance']
+    ]
+    roles_table = Table(roles_data, colWidths=[2*inch, 4.5*inch])
+    roles_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#8e44ad')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f4ecf7')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#8e44ad'))
+    ]))
+    story.append(roles_table)
+    story.append(Spacer(1, 0.3*inch))
+
+    # Defect Management
+    story.append(Paragraph("8. DEFECT MANAGEMENT", heading1_style))
+    defect_data = [
+        ['Priority', 'Definition'],
+        ['P1 - Critical', 'Critical bugs blocking core functionality - Fix immediately'],
+        ['P2 - Major', 'Major bugs affecting key features - Fix before release'],
+        ['P3 - Minor', 'Minor bugs with workarounds - Fix in next sprint'],
+        ['P4 - Low', 'Cosmetic issues and enhancements - Backlog']
+    ]
+    defect_table = Table(defect_data, colWidths=[2*inch, 4.5*inch])
+    defect_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#d35400')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#fdebd0')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#d35400'))
+    ]))
+    story.append(defect_table)
+
+    # Build PDF
+    doc.build(story)
+    return filename
 
 
 def generate_test_plan_csv(requirement_text, feature_name):
@@ -674,27 +1047,25 @@ def generate_documentation():
         if len(feature_name) > 50:
             feature_name = feature_name[:50]
 
-        # Generate content - ALL as CSV now
-        test_plan_csv = generate_test_plan_csv(requirement, feature_name)
-        test_cases_csv = generate_test_cases_csv(requirement, feature_name)
-        exploratory_csv = generate_exploratory_csv(feature_name)
-
-        # Save to temp files - ALL as CSV
+        # Generate content - PDF for test plan, CSV for test cases and exploratory
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        test_plan_filename = f'test_plan_{timestamp}.csv'
-        test_cases_filename = f'test_cases_{timestamp}.csv'
-        exploratory_filename = f'exploratory_{timestamp}.csv'
 
+        # Test Plan as PDF
+        test_plan_filename = f'test_plan_{timestamp}.pdf'
         test_plan_file = os.path.join(TMP_DIR, test_plan_filename)
+        generate_test_plan_pdf(requirement, feature_name, test_plan_file)
+
+        # Test Cases as CSV
+        test_cases_csv = generate_test_cases_csv(requirement, feature_name)
+        test_cases_filename = f'test_cases_{timestamp}.csv'
         test_cases_file = os.path.join(TMP_DIR, test_cases_filename)
-        exploratory_file = os.path.join(TMP_DIR, exploratory_filename)
-
-        with open(test_plan_file, 'w', encoding='utf-8') as f:
-            f.write(test_plan_csv)
-
         with open(test_cases_file, 'w', encoding='utf-8') as f:
             f.write(test_cases_csv)
 
+        # Exploratory Testing as CSV
+        exploratory_csv = generate_exploratory_csv(feature_name)
+        exploratory_filename = f'exploratory_{timestamp}.csv'
+        exploratory_file = os.path.join(TMP_DIR, exploratory_filename)
         with open(exploratory_file, 'w', encoding='utf-8') as f:
             f.write(exploratory_csv)
 
@@ -709,7 +1080,7 @@ def generate_documentation():
                 'filename': test_plan_filename,
                 'download_url': f'/api/download/{test_plan_filename}',
                 'title': f'{feature_name} - Test Plan',
-                'type': 'csv'
+                'type': 'pdf'
             },
             'test_cases': {
                 'id': timestamp,
