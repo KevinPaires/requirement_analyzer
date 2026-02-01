@@ -1161,6 +1161,7 @@ def generate_documentation():
     """Generate QA documentation from requirements"""
 
     try:
+        print("=== Starting documentation generation ===")
         data = request.get_json()
         requirement = data.get('requirement', '')
         session_id = data.get('session_id', 'default')
@@ -1174,15 +1175,24 @@ def generate_documentation():
         if len(feature_name) > 50:
             feature_name = feature_name[:50]
 
+        print(f"Feature name: {feature_name}")
+
         # Generate content - PDF for test plan, CSV for test cases and exploratory
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 
         # Test Plan as PDF
+        print("Generating test plan PDF...")
         test_plan_filename = f'test_plan_{timestamp}.pdf'
         test_plan_file = os.path.join(TMP_DIR, test_plan_filename)
-        generate_test_plan_pdf(requirement, feature_name, test_plan_file)
+        try:
+            generate_test_plan_pdf(requirement, feature_name, test_plan_file)
+            print(f"✓ Test plan PDF generated: {test_plan_filename}")
+        except Exception as e:
+            print(f"ERROR generating PDF: {e}")
+            raise
 
         # Test Cases as CSV
+        print("Generating test cases CSV...")
         test_cases_csv = generate_test_cases_csv(requirement, feature_name)
         test_cases_filename = f'test_cases_{timestamp}.csv'
         test_cases_file = os.path.join(TMP_DIR, test_cases_filename)
@@ -1191,13 +1201,16 @@ def generate_documentation():
 
         # Count actual test cases generated
         tc_count = len([line for line in test_cases_csv.split('\n') if line.startswith('TC_')])
+        print(f"✓ Test cases CSV generated: {tc_count} test cases")
 
         # Exploratory Testing as CSV
+        print("Generating exploratory testing CSV...")
         exploratory_csv = generate_exploratory_csv(feature_name)
         exploratory_filename = f'exploratory_{timestamp}.csv'
         exploratory_file = os.path.join(TMP_DIR, exploratory_filename)
         with open(exploratory_file, 'w', encoding='utf-8') as f:
             f.write(exploratory_csv)
+        print(f"✓ Exploratory CSV generated: {exploratory_filename}")
 
         # Return downloadable file information
         result = {
