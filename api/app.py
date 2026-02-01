@@ -482,10 +482,46 @@ End of Exploratory Testing Charters
     return content
 
 
+# Global variable to store last error for debugging
+last_google_docs_error = None
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     return jsonify({'status': 'healthy', 'service': 'QA Documentation Generator'})
+
+@app.route('/api/debug/credentials', methods=['GET'])
+def debug_credentials():
+    """Debug endpoint to check credential status"""
+    try:
+        # Add api directory to path for imports
+        api_dir = os.path.dirname(os.path.abspath(__file__))
+        if api_dir not in sys.path:
+            sys.path.insert(0, api_dir)
+
+        from google_docs_simple import get_credentials
+
+        # Check environment variable
+        has_env_var = bool(os.environ.get('GOOGLE_CREDENTIALS'))
+        env_var_length = len(os.environ.get('GOOGLE_CREDENTIALS', ''))
+
+        # Try to load credentials
+        creds = get_credentials()
+        has_creds = bool(creds)
+
+        info = {
+            'has_env_var': has_env_var,
+            'env_var_length': env_var_length,
+            'credentials_loaded': has_creds,
+            'last_error': last_google_docs_error
+        }
+
+        if creds and hasattr(creds, 'service_account_email'):
+            info['service_account_email'] = creds.service_account_email
+
+        return jsonify(info)
+    except Exception as e:
+        return jsonify({'error': str(e), 'last_error': last_google_docs_error}), 500
 
 
 @app.route('/api/generate', methods=['POST'])
@@ -538,6 +574,7 @@ def generate_documentation():
         }
 
         # Try to create real Google Docs
+        global last_google_docs_error
         google_docs_error = None
         try:
             # Add api directory to path for imports
@@ -586,6 +623,7 @@ def generate_documentation():
             import traceback
             traceback.print_exc()
             google_docs_error = str(e)
+            last_google_docs_error = str(e)
             # Fallback to demo links
             result['test_plan'] = {'id': 'demo', 'url': 'https://docs.google.com/document/d/demo', 'title': f'{feature_name} - Test Plan'}
             result['test_cases'] = {'id': 'demo', 'url': 'https://docs.google.com/spreadsheets/d/demo', 'title': f'{feature_name} - Test Cases'}
@@ -594,6 +632,7 @@ def generate_documentation():
         # Add debug info for troubleshooting
         if google_docs_error:
             result['debug_info'] = google_docs_error
+            last_google_docs_error = google_docs_error
 
         return jsonify(result)
 
