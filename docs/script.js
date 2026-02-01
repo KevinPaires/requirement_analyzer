@@ -363,7 +363,7 @@ function addResultMessage(data) {
                             <div class="doc-icon">📄</div>
                             <div class="doc-info">
                                 <h4>Test Plan</h4>
-                                <p>Professional PDF with test strategy, scope, and schedule (.pdf)</p>
+                                <p>Comprehensive test strategy, scope, and schedule (.md)</p>
                             </div>
                         </div>
                         <div class="doc-arrow">⬇</div>
