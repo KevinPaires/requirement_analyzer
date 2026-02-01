@@ -55,13 +55,21 @@ def create_google_doc(title, content):
             return {'error': error_msg}
 
         print("Building services...")
-        docs_service = build('docs', 'v1', credentials=creds)
         drive_service = build('drive', 'v3', credentials=creds)
+        docs_service = build('docs', 'v1', credentials=creds)
 
-        # Create document
-        print("Creating document...")
-        doc = docs_service.documents().create(body={'title': title}).execute()
-        doc_id = doc.get('documentId')
+        # Create document via Drive API first (this has better permissions)
+        print("Creating document via Drive API...")
+        file_metadata = {
+            'name': title,
+            'mimeType': 'application/vnd.google-apps.document'
+        }
+
+        file = drive_service.files().create(
+            body=file_metadata,
+            fields='id'
+        ).execute()
+        doc_id = file.get('id')
         print(f"Document created with ID: {doc_id}")
 
         # Make the document publicly accessible
@@ -113,19 +121,22 @@ def create_google_sheet(title, csv_data):
             print(error_msg)
             return {'error': error_msg}
 
-        sheets_service = build('sheets', 'v4', credentials=creds)
         drive_service = build('drive', 'v3', credentials=creds)
+        sheets_service = build('sheets', 'v4', credentials=creds)
 
-        # Create spreadsheet
-        spreadsheet = {
-            'properties': {'title': title}
+        # Create spreadsheet via Drive API first
+        print(f"Creating spreadsheet via Drive API: {title}")
+        file_metadata = {
+            'name': title,
+            'mimeType': 'application/vnd.google-apps.spreadsheet'
         }
 
-        sheet = sheets_service.spreadsheets().create(
-            body=spreadsheet
+        file = drive_service.files().create(
+            body=file_metadata,
+            fields='id'
         ).execute()
-
-        sheet_id = sheet.get('spreadsheetId')
+        sheet_id = file.get('id')
+        print(f"Spreadsheet created with ID: {sheet_id}")
 
         # Make the spreadsheet publicly accessible
         print(f"Sharing spreadsheet {sheet_id}...")
