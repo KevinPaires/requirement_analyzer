@@ -810,15 +810,20 @@ TC_050,Verify notification system,Positive - Functional,High,Notification trigge
 
 def generate_test_cases_csv(requirement_text, feature_name):
     """Main test case generation function with AI fallback"""
-    # Try AI generation first
-    ai_result = generate_test_cases_with_ai(requirement_text, feature_name)
+    # TEMPORARY: Disable AI generation due to Railway timeout issues
+    # AI generation takes 20-30s which exceeds Railway's 30s limit
+    # TODO: Move to async/background job processing
+    print("⚠ AI generation disabled on Railway - using static fallback")
+    return generate_test_cases_csv_fallback()
 
-    if ai_result:
-        print("✓ Using AI-generated test cases")
-        return ai_result
-    else:
-        print("✓ Using fallback static test cases")
-        return generate_test_cases_csv_fallback()
+    # Original AI-first approach (kept for future re-enabling):
+    # ai_result = generate_test_cases_with_ai(requirement_text, feature_name)
+    # if ai_result:
+    #     print("✓ Using AI-generated test cases")
+    #     return ai_result
+    # else:
+    #     print("✓ Using fallback static test cases")
+    #     return generate_test_cases_csv_fallback()
 
 
 def generate_exploratory_testing_content(feature_name):
